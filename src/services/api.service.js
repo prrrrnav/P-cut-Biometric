@@ -3,6 +3,9 @@ import API_CONFIG, { apiCall, getImageUrl } from '../config/api';
 
 class ApiService {
     // Get products with optional filters
+    async getProduct(productId) {
+        return await apiCall(`${API_CONFIG.ENDPOINTS.PRODUCTS}/${productId}`);
+    }
     async getProducts(filters = {}) {
         // Ensure category is passed as a query parameter
         const params = new URLSearchParams(filters).toString();
