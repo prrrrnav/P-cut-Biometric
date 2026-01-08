@@ -1,0 +1,29 @@
+# API .htaccess Configuration
+
+# Enable Rewrite Engine
+RewriteEngine On
+
+# Set base directory
+RewriteBase /api/
+
+# Allow access to health check
+RewriteRule ^health\.php$ - [L]
+
+# Allow access to endpoints
+RewriteCond %{REQUEST_URI} ^/api/endpoints/
+RewriteRule ^(.*)$ $1 [L]
+
+# Protect config directory
+RewriteCond %{REQUEST_URI} ^/api/config/
+RewriteRule ^(.*)$ - [F,L]
+
+# Enable CORS for all API requests
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type, Authorization"
+</IfModule>
+
+# Handle OPTIONS requests
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^(.*)$ $1 [R=200,L]
