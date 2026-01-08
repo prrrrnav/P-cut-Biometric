@@ -106,9 +106,8 @@ export default function SimplifiedHeader() {
                       {category.name}
                       <ChevronDown
                         size={16}
-                        className={`dropdown-icon ${
-                          openDropdown === category.id ? 'rotate' : ''
-                        }`}
+                        className={`dropdown-icon ${openDropdown === category.id ? 'rotate' : ''
+                          }`}
                       />
                     </button>
 
@@ -127,13 +126,17 @@ export default function SimplifiedHeader() {
                                   className="dropdown-item"
                                   onClick={() => {
                                     navigate(
-                                      getProductRoute(
-                                        category.id,
-                                        productType.id
-                                      )
+                                      getProductRoute(category.id, productType.id),
+                                      {
+                                        state: {
+                                          pageTitle: productType.name,
+                                          productTypeId: productType.id // ✅ THIS is the key line
+                                        },
+                                      }
                                     );
                                     setOpenDropdown(null);
                                   }}
+
                                 >
                                   <div className="dropdown-item-icon">
                                     <Icon size={20} />

@@ -1,199 +1,176 @@
-import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { 
-  FileText, 
-  Wrench, 
-  BookOpen, 
-  Video, 
+import React, { useState, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import ApiService from '../services/api.service';
+import {
+  FileText,
+  Wrench,
+  BookOpen,
+  Video,
   ArrowLeft,
   Check,
-  ChevronLeft,
-  ChevronRight,
   Zap,
   Shield,
-  Award
+  Award,
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
 import './ModernProductDetail.css';
 
-const ModernProductDetail = () => {
-  const { id } = useParams();
+const ProductDetailPage = () => {
+  const { productId } = useParams();
+  const navigate = useNavigate();
+
+  const [product, setProduct] = useState(null);
   const [activeImage, setActiveImage] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Sample product data - replace with your actual product data
-  const product = {
-    id: 'x990',
-    name: 'FINGER PRINT - X990',
-    category: 'Finger-print',
-    tagline: 'Advanced Biometric Access Control Solution',
-    rating: 4.8,
-    reviews: 127,
-    images: [
-      '/api/placeholder/600/600', // Replace with actual product images
-      '/api/placeholder/600/600',
-      '/api/placeholder/600/600',
-      '/api/placeholder/600/600'
-    ],
-    features: [
-      { label: 'Fingerprint Capacity', value: '10,000' },
-      { label: 'Transaction Capacity', value: '100,000' },
-      { label: 'Card Capacity', value: '10,000' },
-      { label: 'Fingerprint Sensor', value: '500 DPI Optical Sensor' }
-    ],
-    specifications: [
-      { label: 'Display', value: '2.8 inch TFT Screen' },
-      { label: 'Communication', value: 'TCP/IP, USB-Host, WiFi (Optional)' },
-      { label: 'Verification Speed', value: '< 1 second' },
-      { label: 'Operating Temperature', value: '0°C to 45°C' },
-      { label: 'Power Supply', value: 'DC 12V 3A' },
-      { label: 'Wiegand', value: 'Input & Output' }
-    ],
-    highlights: [
-      'High-precision 500 DPI optical sensor',
-      'Large storage capacity for enterprises',
-      'Fast verification speed under 1 second',
-      'Multiple authentication methods',
-      'Built-in access control functions',
-      'Compatible with third-party systems'
-    ],
-    documents: [
-      { type: 'catalogue', label: 'PDF Catalogue', icon: FileText },
-      { type: 'installation', label: 'Installation Guide', icon: Wrench },
-      { type: 'manual', label: 'User Manual', icon: BookOpen },
-      { type: 'videos', label: 'Video Tutorials', icon: Video }
-    ]
-  };
+  // 🔹 Fetch product from backend
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        setLoading(true);
+        console.log('Fetching product with ID/slug:', productId);
+        const res = await ApiService.getProduct(productId);
+        console.log('API Response:', res);
 
-  const nextImage = () => {
-    setActiveImage((prev) => (prev + 1) % product.images.length);
-  };
+        if (res?.success) {
+          setProduct(res.data);
+        } else {
+          throw new Error(res?.message || 'Product not found');
+        }
+      } catch (err) {
+        console.error('Error fetching product:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const prevImage = () => {
-    setActiveImage((prev) => (prev - 1 + product.images.length) % product.images.length);
-  };
+    if (productId) {
+      fetchProduct();
+    }
+  }, [productId]);
+
+
+  /* ===========================
+     LOADING / ERROR STATES
+  ============================ */
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-32">
+        <Loader2 className="animate-spin" size={48} />
+      </div>
+    );
+  }
+
+  if (error || !product) {
+    return (
+      <div className="text-center py-32">
+        <AlertCircle className="mx-auto text-red-500 mb-4" size={48} />
+        <h2 className="text-xl font-bold">Product Not Found</h2>
+        <button
+          onClick={() => navigate(-1)}
+          className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg"
+        >
+          Go Back
+        </button>
+      </div>
+    );
+  }
+
+  /* ===========================
+     RENDER
+  ============================ */
 
   return (
     <div className="modern-product-detail">
+
       {/* Breadcrumb */}
       <div className="container">
         <div className="breadcrumb">
           <Link to="/" className="breadcrumb-link">Home</Link>
-          <span className="breadcrumb-separator">/</span>
-          <Link to="/products" className="breadcrumb-link">Products</Link>
-          <span className="breadcrumb-separator">/</span>
-          <Link to={`/category/${product.category.toLowerCase()}`} className="breadcrumb-link">
-            {product.category}
-          </Link>
-          <span className="breadcrumb-separator">/</span>
+          <span>/</span>
           <span className="breadcrumb-current">{product.name}</span>
         </div>
 
-        <Link to="/products" className="back-button">
+        <button onClick={() => navigate(-1)} className="back-button">
           <ArrowLeft size={20} />
-          <span>Back to Products</span>
-        </Link>
+          Back
+        </button>
       </div>
 
       {/* Product Header */}
       <div className="product-header">
         <div className="container">
           <div className="product-layout">
-            {/* Image Gallery Section */}
+
+            {/* Images */}
             <div className="product-gallery">
               <div className="main-image-container">
                 <div className="image-badge">
                   <Award size={16} />
                   <span>Premium Quality</span>
                 </div>
-                <img 
-                  src={product.images[activeImage]} 
+
+                <img
+                  src={product.image_url ? ApiService.getImageUrl(product.image_url) : '/placeholder.png'}
                   alt={product.name}
                   className="main-image"
                 />
-                {product.images.length > 1 && (
-                  <>
-                    <button className="image-nav prev" onClick={prevImage}>
-                      <ChevronLeft size={24} />
-                    </button>
-                    <button className="image-nav next" onClick={nextImage}>
-                      <ChevronRight size={24} />
-                    </button>
-                  </>
-                )}
               </div>
-              
-              {/* Thumbnail Gallery */}
-              {product.images.length > 1 && (
-                <div className="thumbnail-gallery">
-                  {product.images.map((img, index) => (
-                    <button
-                      key={index}
-                      className={`thumbnail ${activeImage === index ? 'active' : ''}`}
-                      onClick={() => setActiveImage(index)}
-                    >
-                      <img src={img} alt={`${product.name} view ${index + 1}`} />
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
 
-            {/* Product Info Section */}
+            {/* Product Info */}
             <div className="product-info">
               <div className="category-badge">
                 <Shield size={14} />
-                <span>{product.category}</span>
+                <span>{product.product_type_name}</span>
               </div>
-              
+
               <h1 className="product-title">{product.name}</h1>
-              
-              <p className="product-tagline">{product.tagline}</p>
+              <p className="product-tagline">{product.short_description}</p>
 
+              {/* Rating */}
               <div className="rating-section">
-                <div className="stars">
-                  {[...Array(5)].map((_, i) => (
-                    <span key={i} className={i < Math.floor(product.rating) ? 'star filled' : 'star'}>
-                      ★
-                    </span>
-                  ))}
-                </div>
-                <span className="rating-text">{product.rating} out of 5</span>
-                <span className="reviews-count">({product.reviews} reviews)</span>
+                {[...Array(5)].map((_, i) => (
+                  <span key={i} className={i < Math.floor(product.rating || 5) ? 'star filled' : 'star'}>
+                    ★
+                  </span>
+                ))}
+                <span className="rating-text">{product.rating || 5} / 5</span>
               </div>
 
-              {/* Key Features */}
-              <div className="key-features">
-                <h3 className="section-title">
-                  <Zap size={20} />
-                  Key Features
-                </h3>
-                <div className="features-grid">
-                  {product.features.map((feature, index) => (
-                    <div key={index} className="feature-card">
-                      <div className="feature-label">{feature.label}</div>
-                      <div className="feature-value">{feature.value}</div>
-                    </div>
-                  ))}
+              {/* Features */}
+              {product.features && product.features.length > 0 && (
+                <div className="key-features">
+                  <h3 className="section-title">
+                    <Zap size={20} /> Key Features
+                  </h3>
+                  <div className="features-grid">
+                    {product.features.map((f, i) => (
+                      <div key={i} className="feature-card">
+                        <div className="feature-value">{f.feature_text || f}</div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
-              {/* Action Buttons */}
+              {/* Documents (static buttons for now) */}
               <div className="action-buttons">
-                {product.documents.map((doc, index) => {
-                  const Icon = doc.icon;
-                  return (
-                    <button key={index} className="action-btn">
-                      <Icon size={20} />
-                      <span>{doc.label}</span>
-                    </button>
-                  );
-                })}
+                <button className="action-btn"><FileText size={20} /> Catalogue</button>
+                <button className="action-btn"><Wrench size={20} /> Installation</button>
+                <button className="action-btn"><BookOpen size={20} /> Manual</button>
+                <button className="action-btn"><Video size={20} /> Videos</button>
               </div>
 
-              {/* Quick Contact */}
+              {/* Contact */}
               <div className="quick-contact">
                 <p>Need assistance with this product?</p>
                 <Link to="/contact" className="contact-link">
-                  Contact Our Team →
+                  Get Quote →
                 </Link>
               </div>
             </div>
@@ -201,53 +178,39 @@ const ModernProductDetail = () => {
         </div>
       </div>
 
-      {/* Product Details Tabs */}
-      <div className="product-details-section">
-        <div className="container">
-          <div className="details-grid">
-            {/* Highlights */}
+      {/* Specifications */}
+      {product.specifications && product.specifications.length > 0 && (
+        <div className="product-details-section">
+          <div className="container">
             <div className="detail-card">
-              <h2 className="detail-title">Product Highlights</h2>
-              <ul className="highlights-list">
-                {product.highlights.map((highlight, index) => (
-                  <li key={index} className="highlight-item">
-                    <Check size={18} className="check-icon" />
-                    <span>{highlight}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Specifications */}
-            <div className="detail-card">
-              <h2 className="detail-title">Technical Specifications</h2>
+              <h2 className="detail-title">Specifications</h2>
               <div className="specs-table">
-                {product.specifications.map((spec, index) => (
-                  <div key={index} className="spec-row">
-                    <div className="spec-label">{spec.label}</div>
-                    <div className="spec-value">{spec.value}</div>
+                {product.specifications.map((spec, i) => (
+                  <div key={i} className="spec-row">
+                    <div className="spec-label">{spec.spec_key || spec.key}</div>
+                    <div className="spec-value">{spec.spec_value || spec.value}</div>
                   </div>
                 ))}
               </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Related Products Section */}
-      <div className="related-products-section">
-        <div className="container">
-          <h2 className="section-heading">Related Products</h2>
-          <p className="section-description">
-            Explore more products from our {product.category} category
-          </p>
-          <Link to={`/category/${product.category.toLowerCase()}`} className="view-all-btn">
-            View All Products in {product.category}
-          </Link>
+      {/* Full Description */}
+      {product.full_description && (
+        <div className="product-details-section">
+          <div className="container">
+            <div className="detail-card">
+              <h2 className="detail-title">Description</h2>
+              <p className="text-gray-700 leading-relaxed">{product.full_description}</p>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
+
     </div>
   );
 };
 
-export default ModernProductDetail;
+export default ProductDetailPage;

@@ -24,11 +24,11 @@ export const getApiUrl = (endpoint) => `${API_CONFIG.BASE_URL}${endpoint}`;
 
 // Ensure 'export' is here so api.service.js can find it
 export const apiCall = async (endpoint, options = {}) => {
+    const url = getApiUrl(endpoint);
     try {
-        const url = getApiUrl(endpoint);
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.TIMEOUT);
-        
+
         const response = await fetch(url, {
             ...options,
             headers: {
@@ -42,13 +42,18 @@ export const apiCall = async (endpoint, options = {}) => {
 
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
-        
+
         // Handle success flag from your PHP ApiResponse
         if (data.success === false) throw new Error(data.message || 'API request failed');
-        
+
         return data;
     } catch (error) {
-        console.error('API Call Error:', endpoint, error);
+        console.error('API Call Error:', {
+            endpoint,
+            fullUrl: url,
+            error: error.message,
+            errorDetails: error
+        });
         throw error;
     }
 };

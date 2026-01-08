@@ -14,7 +14,7 @@ import FingerprintProductsPage from './pages/FingerprintProductsPage';
 import RfidReader from './pages/RfidReader';
 
 // 🧪 TEMPORARY: Test Page (create this file first)
-   import TestAPI from './pages/TestAPI';
+import TestAPI from './pages/TestAPI';
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component {
@@ -37,7 +37,7 @@ class ErrorBoundary extends React.Component {
         <div style={{ padding: '50px', textAlign: 'center' }}>
           <h1 style={{ color: 'red' }}>Something went wrong</h1>
           <p>{this.state.error?.message}</p>
-          <button 
+          <button
             onClick={() => window.location.reload()}
             style={{
               padding: '10px 20px',
@@ -61,10 +61,10 @@ class ErrorBoundary extends React.Component {
 
 // Loading Component
 const LoadingFallback = () => (
-  <div style={{ 
-    display: 'flex', 
-    justifyContent: 'center', 
-    alignItems: 'center', 
+  <div style={{
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
     height: '100vh',
     fontSize: '20px'
   }}>
@@ -89,7 +89,7 @@ const App = () => {
                 <Route path="/contact" element={<ContactPage />} />
 
                 {/* 🧪 TEMPORARY: Uncomment to test API */}
-                { <Route path="/test-api" element={<TestAPI />} />}
+                {<Route path="/test-api" element={<TestAPI />} />}
 
                 {/* Dedicated Product Pages */}
                 <Route path="/fingerprint-products" element={<FingerprintProductsPage />} />
@@ -102,7 +102,7 @@ const App = () => {
                 <Route path="/products/:categoryId/:productTypeId" element={<ProductListPage />} />
 
                 {/* Product Detail Page */}
-                <Route path="/product/:categoryId/:productTypeId/:productId" element={<ProductDetailPage />} />
+                <Route path="/product/:productId" element={<ProductDetailPage />} />
 
                 {/* 404 Page */}
                 <Route
